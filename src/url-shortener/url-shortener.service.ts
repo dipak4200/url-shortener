@@ -15,7 +15,7 @@ export class UrlShortenerService {
   private generateShortId(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
-    const length = 8; // Length of the short ID
+    const length = Number(process.env.LENGHT) || 8; // Length of the short ID
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }

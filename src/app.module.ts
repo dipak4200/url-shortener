@@ -18,7 +18,7 @@ import { PrismaService } from './prisma/prisma.service';
       global: true,
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'), // <--- Read from env
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '1h' },
       }),
       inject: [ConfigService],
