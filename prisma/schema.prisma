@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")  // <--- ADD THIS LINE
+}
+
+model ShortUrl {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  longUrl     String
+  shortUrlId  String    @unique  // This is the unique code (e.g., "xyz123")
+  shortUrl    String    // The full short link (e.g., "http://localhost:3000/url/xyz123")
+  uriName     String?   // Optional custom name
+  expiryDate  DateTime?
+  createdOn   DateTime  @default(now())
+  updateOn    DateTime  @updatedAt
+  createdBy   String?   
+  updatedBy   String?   
+  userName    String?   
+  email       String?
+}
