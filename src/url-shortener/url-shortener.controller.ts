@@ -8,14 +8,16 @@ import {
   Param,
   Res,
   HttpStatus,
-  ForbiddenException,
+  Patch,
   UseGuards,
 } from '@nestjs/common';
 import { UrlShortenerService } from './url-shortener.service';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
+import { UpdateShortUrlDto } from './dto/update-short-url.dto';
 import type { Response } from 'express';
 import { RolesGuard } from '../common/guards/roles.guard';
 
+import { Roles } from '../common/decorators/roles.decorator';
 @Controller('url')
 export class UrlShortenerController {
   constructor(private readonly urlShortenerService: UrlShortenerService) {}
@@ -44,10 +46,22 @@ export class UrlShortenerController {
 
   @Delete('delete/:code')
   @UseGuards(RolesGuard)
-  async deleteUrl(
-    @Param('code') code: string) {
-
-    // 2. Call Service to Delete
+  async deleteUrl(@Param('code') code: string) {
     return this.urlShortenerService.deleteShortUrl(code);
+  }
+
+  @Patch('edit/:code')
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'manager') // <--- Only Admin OR Manager can access this
+  async updateUrl(
+    @Param('code') code: string,
+    @Body() updateDto: UpdateShortUrlDto
+  ) {
+    return this.urlShortenerService.updateShortUrl(code, updateDto);
+  }
+
+  @Get('check/:code')
+  async checkAvailability(@Param('code') code: string) {
+    return this.urlShortenerService.checkAvailability(code);
   }
 }

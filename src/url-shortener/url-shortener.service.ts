@@ -5,14 +5,22 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
+import { UpdateShortUrlDto } from './dto/update-short-url.dto';
 
 @Injectable()
 export class UrlShortenerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Helper to generate unique ID
   private generateShortId(): string {
-    return Math.random().toString(36).substring(2, 8);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const length = 8; // Length of the short ID
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return result;
   }
 
   async shortenUrl(dto: CreateShortUrlDto) {
@@ -99,4 +107,38 @@ export class UrlShortenerService {
 
     return { message: 'URL deleted successfully', shortUrlId };
   }
+
+  async updateShortUrl(shortUrlId: string, updateDto: UpdateShortUrlDto) {
+    // Check if exists
+    const existing = await this.prisma.shortUrl.findUnique({
+      where: { shortUrlId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Short URL not found');
+    }
+
+    // Update
+    return this.prisma.shortUrl.update({
+      where: { shortUrlId },
+      data: {
+        ...updateDto,
+        expiryDate: updateDto.expiryDate ? new Date(updateDto.expiryDate) : undefined,
+        updateOn: new Date(), // Manually update the timestamp
+      },
+    });
+  }
+
+  async checkAvailability(shortUrlId: string) {
+    const existing = await this.prisma.shortUrl.findUnique({
+      where: { shortUrlId },
+    });
+
+    // If 'existing' is found, it is taken (Available = false)
+    // If 'existing' is null, it is free (Available = true)
+    return {
+      shortUrlId,
+      isAvailable: !existing,
+    };
+}
 }
